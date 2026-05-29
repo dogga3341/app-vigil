@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vigil">
+<meta name="theme-color" content="#080C12">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-512.png">
+<title>Vigil</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080C12;--surf:#0F1520;--surf2:#151D2B;--surf3:#1C2538;--border:#232F42;--border2:#2A3A54;
+  --text:#E8F0FE;--muted:#6B7E9F;--muted2:#8A9BBD;
+  --accent:#4D9EFF;--accent2:#8B63F7;
+  --green:#22C55E;--green-bg:#05150E;--green-bd:#166534;
+  --amber:#F59E0B;--amber-bg:#130D00;--amber-bd:#78430A;
+  --red:#EF4444;--red-bg:#130606;--red-bd:#991B1B;
+  --blue:#4D9EFF;--blue-bg:#05122A;--blue-bd:#1D3E72;
+  --purple:#9B7CFC;--purple-bg:#0D0820;--purple-bd:#5B3AA0;
+  --wa:#22C55E;
+  --sans:'Plus Jakarta Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --disp:'Outfit',sans-serif;
+  --radius:16px;--radius-sm:10px;--radius-xs:7px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;user-select:none;}
+
+/* ── NOISE TEXTURE overlay ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.6;}
+
+/* ══ LOGIN SCREEN ══ */
+#sc-login{background:var(--bg);align-items:center;justify-content:center;padding:0 24px;position:relative;overflow:hidden;}
+#sc-login::before{content:'';position:absolute;top:-120px;left:-80px;width:340px;height:340px;background:radial-gradient(circle,rgba(77,158,255,.12),transparent 70%);pointer-events:none;}
+#sc-login::after{content:'';position:absolute;bottom:-100px;right:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(139,99,247,.1),transparent 70%);pointer-events:none;}
+.login-wrap{width:100%;max-width:340px;z-index:2;}
+.login-brand{text-align:center;margin-bottom:36px;}
+.login-logo-box{width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 32px rgba(77,158,255,.3),0 0 0 1px rgba(77,158,255,.2);position:relative;}
+.login-logo-box::after{content:'';position:absolute;inset:-1px;border-radius:23px;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);pointer-events:none;}
+.login-logo-icon{font-size:32px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));}
+.login-app-name{font-family:var(--disp);font-size:34px;font-weight:900;letter-spacing:-1px;background:linear-gradient(90deg,#fff 20%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.login-tagline{font-size:13px;color:var(--muted);margin-top:4px;font-weight:500;letter-spacing:.3px;}
+.login-card{background:var(--surf);border:1px solid var(--border2);border-radius:22px;padding:28px 24px;position:relative;overflow:hidden;}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.login-field{margin-bottom:14px;}
+.login-field-label{font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;display:block;font-weight:500;}
+.login-select{width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:15px;font-family:var(--sans);font-weight:600;color:var(--text);outline:none;-webkit-appearance:none;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7E9F' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;transition:border-color .2s;}
+.login-select:focus{border-color:var(--accent);}
+.login-pin-wrap{position:relative;}
+.login-pin{width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:12px;padding:13px 44px 13px 16px;font-size:22px;font-family:var(--mono);font-weight:700;color:var(--text);outline:none;-webkit-appearance:none;letter-spacing:6px;transition:border-color .2s,box-shadow .2s;caret-color:var(--accent);}
+.login-pin:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(77,158,255,.12);}
+.login-pin::placeholder{letter-spacing:2px;font-size:14px;color:var(--muted);}
+.login-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;line-height:1;}
+.btn-login{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:800;padding:16px;border-radius:13px;border:none;cursor:pointer;font-family:var(--sans);letter-spacing:.2px;box-shadow:0 4px 24px rgba(77,158,255,.3);margin-top:6px;transition:opacity .15s,transform .1s;}
+.btn-login:active{opacity:.88;transform:scale(.99);}
+.login-error{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);font-weight:600;text-align:center;margin-top:12px;display:none;}
+.login-error.show{display:block;animation:fadeIn .2s ease;}
+.login-footer{text-align:center;margin-top:18px;font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.5px;}
+/* user badge no topbar */
+.topbar-user{font-family:var(--mono);font-size:11px;color:var(--muted2);background:var(--surf2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;white-space:nowrap;cursor:pointer;}
+.topbar-user:active{color:var(--red);}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+.screen{display:none;flex-direction:column;height:100vh;}.screen.active{display:flex;}
+
+/* TOPBAR */
+.topbar{background:var(--surf);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative;}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:.5;}
+.topbar-logo{font-family:var(--disp);font-size:17px;font-weight:900;letter-spacing:-.3px;flex:1;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.topbar-back{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:6px;line-height:1;border-radius:8px;transition:color .15s;}
+.topbar-back:active{color:var(--text);}
+.topbar-right{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
+.scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+
+/* UPLOAD */
+#sc-upload .scroll-body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px 20px;}
+.hero-card{width:100%;max-width:360px;background:var(--surf);border:1px solid var(--border2);border-radius:22px;padding:30px 24px 24px;text-align:center;position:relative;overflow:hidden;}
+.hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.hero-card::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 0%,rgba(77,158,255,.07),transparent 70%);pointer-events:none;}
+.hero-icon{width:68px;height:68px;background:linear-gradient(135deg,rgba(77,158,255,.15),rgba(139,99,247,.15));border:1px solid var(--border2);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 18px;}
+.hero-card h2{font-family:var(--disp);font-size:21px;font-weight:900;margin-bottom:7px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.3px;}
+.hero-card p{font-size:13px;color:var(--muted2);line-height:1.65;font-weight:500;}
+.btn-upload{display:block;width:100%;margin-top:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:15px;font-weight:700;padding:15px;border-radius:13px;border:none;cursor:pointer;position:relative;overflow:hidden;font-family:var(--sans);letter-spacing:.1px;box-shadow:0 4px 24px rgba(77,158,255,.25);}
+.btn-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;}
+
+.tip{width:100%;max-width:360px;background:var(--surf);border:1px solid var(--border);border-radius:11px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted2);font-weight:500;}
+
+/* TRIAGEM ENTRY CARD */
+.tri-card{width:100%;max-width:360px;background:var(--surf);border:1px solid var(--border2);border-radius:22px;padding:30px 24px 24px;text-align:center;position:relative;overflow:hidden;}
+.tri-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--accent2));}
+.tri-card::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 0%,rgba(155,124,252,.07),transparent 70%);pointer-events:none;}
+.tri-icon{width:68px;height:68px;background:linear-gradient(135deg,rgba(155,124,252,.15),rgba(77,158,255,.1));border:1px solid var(--border2);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 18px;}
+.tri-card h2{font-family:var(--disp);font-size:21px;font-weight:900;margin-bottom:7px;background:linear-gradient(90deg,var(--purple),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.3px;}
+.tri-card p{font-size:13px;color:var(--muted2);line-height:1.65;font-weight:500;}
+.btn-triagem{display:block;width:100%;margin-top:16px;background:linear-gradient(135deg,var(--purple),var(--accent2));color:#fff;font-size:15px;font-weight:700;padding:15px;border-radius:13px;border:none;cursor:pointer;font-family:var(--sans);letter-spacing:.1px;box-shadow:0 4px 24px rgba(139,99,247,.25);}
+
+.or-divider{width:100%;max-width:360px;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;font-weight:600;font-family:var(--mono);}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* LOADING */
+#sc-loading .scroll-body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;}
+.loader{width:48px;height:48px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-title{font-family:var(--disp);font-size:18px;font-weight:800;}
+.load-sub{font-size:13px;color:var(--muted);text-align:center;font-weight:500;}
+.load-file{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surf);border:1px solid var(--border);padding:5px 12px;border-radius:7px;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.load-bar-wrap{width:220px;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
+.load-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;animation:grow 2.5s ease-in-out infinite;}
+@keyframes grow{0%{width:5%}60%{width:85%}100%{width:95%}}
+
+/* PROGRESSO */
+.prog-wrap{background:var(--surf);border-bottom:1px solid var(--border);padding:11px 16px;flex-shrink:0;}
+.prog-header{display:flex;justify-content:space-between;margin-bottom:7px;}
+.prog-label{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.5px;}
+.prog-pct{font-family:var(--mono);font-size:11px;color:var(--green);font-weight:700;}
+.prog-track{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green),#4ade80);border-radius:4px;transition:width .4s ease;}
+
+.search-wrap{padding:10px 14px;background:var(--surf);border-bottom:1px solid var(--border);flex-shrink:0;}
+.search-inp{width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;font-size:14px;font-family:var(--sans);font-weight:500;color:var(--text);outline:none;-webkit-appearance:none;}
+.search-inp:focus{border-color:var(--accent);}
+.search-inp::placeholder{color:var(--muted);}
+
+/* CARDS ENDEREÇO */
+#sc-enderecos .scroll-body{padding:10px 14px 110px;}
+.end-card{background:var(--surf);border:1px solid var(--border);border-radius:15px;margin-bottom:8px;overflow:hidden;cursor:pointer;transition:transform .1s,border-color .15s;}
+.end-card:active{transform:scale(.98);}
+.end-card.done{border-color:var(--green-bd);background:var(--green-bg);}
+.end-row{display:flex;align-items:center;gap:10px;padding:13px 14px;}
+.end-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--surf2);border:1px solid var(--border);}
+.end-card.done .end-icon{background:var(--green-bg);border-color:var(--green-bd);}
+.end-info{flex:1;min-width:0;}
+.end-addr{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.end-card.done .end-addr{color:var(--green);}
+.end-prod{font-size:12px;color:var(--text);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+.end-meta{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);}
+.end-badge{flex-shrink:0;font-size:10px;font-family:var(--mono);font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.end-badge.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.end-badge.warn{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);}
+.end-badge.danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
+.end-badge.none{background:var(--surf2);color:var(--muted);border:1px solid var(--border);}
+.end-badge.done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.end-arrow{color:var(--muted);font-size:16px;flex-shrink:0;}
+.all-done-banner{background:var(--green-bg);border:1px solid var(--green-bd);border-radius:15px;padding:14px 16px;margin-bottom:10px;display:none;align-items:center;gap:12px;}
+.all-done-banner.show{display:flex;}
+.all-done-banner p{font-size:13px;color:var(--green);line-height:1.4;font-weight:600;}
+
+/* DETALHE */
+#sc-detalhe .scroll-body{padding:14px 14px 120px;}
+.det-addr-tag{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(77,158,255,.2);}
+.addr-text{font-family:var(--mono);font-size:16px;font-weight:700;color:#fff;}
+.addr-sub{font-size:11px;color:rgba(255,255,255,.75);margin-top:2px;font-weight:500;}
+.info-block{background:var(--surf);border:1px solid var(--border);border-radius:15px;margin-bottom:12px;overflow:hidden;}
+.info-block.done{border-color:var(--green-bd);}
+.info-row{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-block.done .info-row:first-child{background:var(--green-bg);}
+.info-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;width:90px;flex-shrink:0;}
+.info-val{font-size:13px;font-weight:600;flex:1;color:var(--text);}
+.info-val.mono{font-family:var(--mono);}
+.val-row{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);gap:10px;}
+.val-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.val-dot.ok{background:var(--green);}
+.val-dot.warn{background:var(--amber);}
+.val-dot.danger{background:var(--red);box-shadow:0 0 8px var(--red);}
+.val-dot.none{background:var(--border);}
+.val-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;width:80px;flex-shrink:0;}
+.val-data-big{font-family:var(--mono);font-size:17px;font-weight:700;flex:1;color:var(--text);}
+.val-status-txt{font-size:11px;color:var(--muted);}
+.btn-edit{background:none;border:1px solid var(--border2);border-radius:10px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--sans);flex-shrink:0;}
+.done-check{background:var(--green-bg);border:1px solid var(--green-bd);border-radius:15px;padding:13px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--green);}
+.nav-btns{display:flex;gap:10px;margin-top:4px;}
+.btn-nav{flex:1;background:var(--surf);border:1px solid var(--border);border-radius:13px;padding:14px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;font-family:var(--sans);text-align:center;}
+.btn-nav.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;box-shadow:0 4px 16px rgba(77,158,255,.2);}
+.btn-nav:disabled{opacity:.3;}
+
+/* BOTTOM */
+.bottom-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surf);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));gap:10px;z-index:90;}
+.bottom-bar.show{display:flex;}
+.btn-pdf{flex:1;background:var(--surf2);border:1px solid var(--border);border-radius:13px;padding:14px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-wa{flex:2;background:var(--wa);color:#fff;border:none;border-radius:13px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-wa:disabled{opacity:.4;cursor:default;}
+
+/* ══════════════════════════════════════════
+   TRIAGEM SCREEN
+   ══════════════════════════════════════════ */
+#sc-triagem{background:var(--bg);}
+#sc-triagem .scroll-body{padding:12px 14px 140px;}
+
+.tri-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.tri-stat{background:var(--surf);border:1px solid var(--border);border-radius:13px;padding:11px 12px;text-align:center;}
+.tri-stat-val{font-family:var(--disp);font-size:22px;font-weight:900;color:var(--text);letter-spacing:-.5px;}
+.tri-stat-val.avariado{color:var(--red);}
+.tri-stat-val.ok{color:var(--green);}
+.tri-stat-label{font-size:10px;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:.3px;}
+
+/* Formulário */
+.tri-form{background:var(--surf);border:1px solid var(--border2);border-radius:18px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.tri-form::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.tri-form::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 0%,rgba(77,158,255,.04),transparent 60%);pointer-events:none;}
+.tri-form-title{font-family:var(--disp);font-size:13px;font-weight:800;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+.tri-field{margin-bottom:12px;}
+.tri-field-label{font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px;display:block;font-weight:500;}
+.tri-inp{width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:11px;padding:12px 14px;font-size:15px;font-family:var(--mono);font-weight:500;color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .2s,box-shadow .2s;caret-color:var(--accent);}
+.tri-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(77,158,255,.1);}
+.tri-inp::placeholder{color:var(--muted);font-size:13px;}
+.tri-inp.scan-inp:focus{animation:pulse-blue 1.8s ease infinite;}
+
+/* ── SEÇÃO DE QUANTIDADE MISTA ── */
+.qty-section{background:var(--surf2);border:1.5px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:12px;}
+.qty-mode-tabs{display:flex;border-bottom:1px solid var(--border);}
+.qty-mode-tab{flex:1;padding:9px 6px;font-size:12px;font-weight:700;font-family:var(--sans);color:var(--muted);background:none;border:none;cursor:pointer;transition:all .15s;letter-spacing:.2px;}
+.qty-mode-tab.active{color:var(--accent);background:var(--blue-bg);border-bottom:2px solid var(--accent);}
+.qty-mode-tab:first-child{border-right:1px solid var(--border);}
+.qty-panels{padding:12px 14px;}
+
+/* Painel simples */
+.qty-simple{display:flex;gap:8px;align-items:center;}
+.qty-simple .tri-inp{flex:1;}
+.tri-unit-group{display:flex;gap:5px;}
+.tri-unit-btn{background:var(--surf3);border:1.5px solid var(--border);border-radius:9px;padding:10px 9px;font-size:12px;font-weight:700;font-family:var(--sans);color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;min-width:38px;}
+.tri-unit-btn.active{background:var(--blue-bg);border-color:var(--accent);color:var(--accent);}
+
+/* Painel misto cx+un */
+.qty-mixed{display:flex;flex-direction:column;gap:10px;}
+.qty-mixed-row{display:flex;gap:8px;align-items:center;}
+.qty-mixed-row label{font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.5px;text-transform:uppercase;width:26px;flex-shrink:0;}
+.qty-mixed-row .tri-inp{flex:1;}
+.qty-mixed-row .unit-pill{background:var(--surf3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:var(--mono);color:var(--muted2);white-space:nowrap;}
+.qty-result-preview{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:8px;}
+.qty-result-preview .qty-label{font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+.qty-result-preview .qty-val{font-family:var(--disp);font-size:16px;font-weight:900;color:var(--accent);letter-spacing:-.3px;flex:1;}
+
+/* ── AVARIADO TOGGLE ── */
+.avariado-section{margin-bottom:12px;}
+.avariado-toggle{display:flex;align-items:center;gap:12px;background:var(--surf2);border:1.5px solid var(--border);border-radius:12px;padding:13px 14px;cursor:pointer;transition:all .2s;}
+.avariado-toggle.active{background:var(--red-bg);border-color:var(--red-bd);}
+.ava-icon{font-size:20px;flex-shrink:0;}
+.ava-info{flex:1;}
+.ava-label{font-size:13px;font-weight:700;color:var(--text);}
+.avariado-toggle.active .ava-label{color:var(--red);}
+.ava-sub{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500;}
+.ava-check{width:22px;height:22px;border-radius:7px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all .2s;}
+.avariado-toggle.active .ava-check{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* Campo quantidade avariada */
+.ava-qty-panel{margin-top:10px;background:var(--red-bg);border:1.5px solid var(--red-bd);border-radius:12px;padding:13px 14px;display:none;}
+.ava-qty-panel.show{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.ava-qty-header{font-size:11px;font-family:var(--mono);color:var(--red);letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+.ava-qty-row{display:flex;gap:8px;align-items:center;}
+.ava-qty-row .tri-inp{flex:1;border-color:var(--red-bd);background:rgba(19,6,6,.6);}
+.ava-qty-row .tri-inp:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.1);}
+.ava-unit-group{display:flex;gap:5px;}
+.ava-unit-btn{background:var(--red-bg);border:1.5px solid var(--red-bd);border-radius:9px;padding:10px 9px;font-size:12px;font-weight:700;font-family:var(--sans);color:var(--red);opacity:.5;cursor:pointer;text-align:center;transition:all .15s;min-width:38px;}
+.ava-unit-btn.active{opacity:1;background:rgba(239,68,68,.2);}
+.ava-qty-note{font-size:11px;color:var(--red);opacity:.7;margin-top:8px;font-weight:500;}
+
+.btn-add-tri{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:15px;font-weight:700;padding:15px;border-radius:13px;border:none;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;box-shadow:0 4px 20px rgba(77,158,255,.2);letter-spacing:.1px;}
+.btn-add-tri:active{opacity:.85;transform:scale(.99);}
+
+/* Lista */
+.tri-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.tri-list-title{font-family:var(--disp);font-size:15px;font-weight:800;color:var(--muted2);letter-spacing:-.2px;}
+.btn-clear-tri{background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);padding:4px 8px;border-radius:7px;}
+
+.tri-item{background:var(--surf);border:1px solid var(--border);border-radius:15px;margin-bottom:8px;overflow:hidden;}
+.tri-item.avariado{border-color:var(--red-bd);background:var(--red-bg);}
+.tri-item-row{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;}
+.tri-item-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--blue-bg);border:1px solid var(--blue-bd);margin-top:1px;}
+.tri-item.avariado .tri-item-icon{background:var(--red-bg);border-color:var(--red-bd);}
+.tri-item-info{flex:1;min-width:0;}
+.tri-item-code{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);}
+.tri-item.avariado .tri-item-code{color:var(--red);}
+.tri-item-cod{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--purple);margin-top:2px;}
+.tri-item-details{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500;}
+.tri-item-badges{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.tri-badge{font-size:10px;font-family:var(--mono);font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid;}
+.tri-badge.qty{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd);}
+.tri-badge.qty-mixed{background:rgba(77,158,255,.12);color:var(--accent);border-color:var(--blue-bd);}
+.tri-badge.ava{background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}
+.tri-badge.ava-qty{background:rgba(239,68,68,.15);color:var(--red);border-color:var(--red-bd);}
+.tri-badge.val-ok{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);}
+.tri-badge.val-warn{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bd);}
+.tri-badge.val-danger{background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}
+.tri-badge.cod{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-bd);}
+.tri-badge.arm{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-bd);}
+.tri-badge.stk{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);}
+.tri-badge.stk-no{background:var(--surf2);color:var(--muted);border-color:var(--border);}
+.btn-del-item{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0;transition:color .15s;}
+.btn-del-item:active{color:var(--red);}
+
+/* ── ESTOQUE SIM / NÃO ── */
+.estoque-sn-group{display:flex;gap:8px;margin-bottom:0;}
+.estoque-sn-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surf2);border:1.5px solid var(--border);border-radius:12px;padding:13px 10px;cursor:pointer;font-family:var(--sans);transition:all .2s;}
+.esn-icon{font-size:16px;font-weight:800;line-height:1;}
+.esn-label{font-size:15px;font-weight:800;font-family:var(--disp);letter-spacing:-.2px;}
+/* NÃO ativo = cinza escuro */
+.estoque-sn-btn.nao{color:var(--muted);}
+.estoque-sn-btn.nao.active{background:var(--surf3);border-color:var(--border2);color:var(--muted2);}
+/* SIM ativo = verde */
+.estoque-sn-btn.sim{color:var(--muted);}
+.estoque-sn-btn.sim.active{background:var(--green-bg);border-color:var(--green-bd);color:var(--green);}
+.estoque-qty-panel{margin-top:10px;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:12px;padding:13px 14px;display:none;}
+.estoque-qty-panel.show{display:block;animation:fadeIn .2s ease;}
+.estoque-qty-header{font-size:11px;font-family:var(--mono);color:var(--green);letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+.estoque-qty-panel .tri-inp{border-color:var(--green-bd);background:rgba(5,21,14,.6);}
+.estoque-qty-panel .tri-inp:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.1);}
+.estoque-qty-panel .ava-unit-btn{background:var(--green-bg);border-color:var(--green-bd);color:var(--green);opacity:.5;}
+.estoque-qty-panel .ava-unit-btn.active{opacity:1;background:rgba(34,197,94,.2);}
+
+/* ── ARMAZENAGEM ── */
+.arm-group{display:flex;gap:8px;}
+.arm-btn{flex:1;background:var(--surf2);border:1.5px solid var(--border);border-radius:11px;padding:13px 6px;font-size:20px;font-weight:900;font-family:var(--disp);color:var(--muted);cursor:pointer;text-align:center;transition:all .2s;letter-spacing:-.3px;}
+.arm-btn.active{background:var(--purple-bg);border-color:var(--purple-bd);color:var(--purple);}
+.arm-btn:last-child{font-size:15px;font-weight:700;}
+
+.tri-empty{text-align:center;padding:44px 20px;color:var(--muted);}
+.tri-empty-icon{font-size:44px;margin-bottom:12px;opacity:.7;}
+.tri-empty-text{font-size:13px;line-height:1.7;font-weight:500;}
+
+/* Bottom bar triagem */
+.tri-bottom{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surf);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));gap:10px;z-index:90;}
+.btn-tri-pdf{flex:1;background:var(--surf2);border:1px solid var(--border);border-radius:13px;padding:14px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-tri-wa{flex:2;background:var(--wa);color:#fff;border:none;border-radius:13px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 16px rgba(34,197,94,.2);}
+.btn-tri-wa:disabled{opacity:.4;}
+
+/* MODAIS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:flex-end;backdrop-filter:blur(4px);}
+.overlay.open{display:flex;}
+.sheet{background:var(--surf);border-radius:24px 24px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));width:100%;animation:up .22s ease;border-top:1px solid var(--border2);}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sheet-handle{width:36px;height:4px;border-radius:4px;background:var(--border2);margin:0 auto 20px;}
+.sheet-title{font-family:var(--disp);font-size:18px;font-weight:800;margin-bottom:5px;letter-spacing:-.2px;}
+.sheet-sub{font-size:13px;color:var(--muted2);margin-bottom:18px;line-height:1.55;font-weight:500;}
+.date-inp{width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:13px;padding:16px 16px;font-size:28px;font-family:var(--mono);font-weight:600;color:var(--text);outline:none;text-align:center;-webkit-appearance:none;transition:border-color .2s;margin-bottom:6px;caret-color:var(--accent);}
+.date-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(77,158,255,.1);}
+.date-hint{font-size:12px;color:var(--muted);text-align:center;margin-bottom:18px;font-family:var(--mono);}
+.sheet-btns{display:flex;gap:10px;}
+.btn-cancel{flex:1;background:var(--surf2);border:1px solid var(--border);border-radius:13px;padding:14px;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;font-family:var(--sans);}
+.btn-ok{flex:2;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans);}
+
+.conf-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);}
+.conf-overlay.open{display:flex;}
+.conf-box{background:var(--surf);border:1px solid var(--border2);border-radius:20px;padding:26px 22px;width:100%;max-width:320px;animation:up .2s ease;text-align:center;}
+.conf-icon{font-size:38px;margin-bottom:12px;}
+.conf-title{font-family:var(--disp);font-size:18px;font-weight:800;margin-bottom:6px;letter-spacing:-.2px;}
+.conf-msg{font-size:13px;color:var(--muted2);line-height:1.55;margin-bottom:14px;font-weight:500;}
+.conf-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent2);background:var(--surf2);border-radius:10px;padding:11px 16px;display:inline-block;margin-bottom:18px;}
+.conf-btns{display:flex;gap:10px;}
+.btn-nao{flex:1;background:var(--surf2);border:1px solid var(--border);border-radius:13px;padding:13px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;font-family:var(--sans);}
+.btn-sim{flex:2;background:linear-gradient(135deg,var(--green),#4ade80);border:none;border-radius:13px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans);}
+
+.wa-note{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:11px;padding:11px 13px;font-size:12px;color:var(--amber);margin-bottom:14px;line-height:1.55;font-weight:500;}
+.wa-textarea{width:100%;height:80px;background:var(--surf2);border:1.5px solid var(--border);border-radius:13px;padding:13px 14px;font-size:13px;font-family:var(--sans);font-weight:500;color:var(--text);resize:none;outline:none;margin-bottom:14px;}
+.wa-textarea:focus{border-color:var(--wa);}
+.btn-wa-send{flex:2;background:var(--wa);border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans);}
+
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:var(--surf);border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:700;padding:10px 18px;border-radius:22px;z-index:400;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;font-family:var(--sans);box-shadow:0 4px 20px rgba(0,0,0,.4);}
+.toast.show{opacity:1;}
+
+@keyframes pulse-blue{0%,100%{box-shadow:0 0 0 0 rgba(77,158,255,.3)}50%{box-shadow:0 0 0 6px rgba(77,158,255,0)}}
+
+/* ══ SCANNER MODAL ══ */
+.scan-overlay{display:none;position:fixed;inset:0;background:#000;z-index:500;flex-direction:column;}
+.scan-overlay.open{display:flex;}
+.scan-topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0;background:rgba(0,0,0,.6);position:absolute;top:0;left:0;right:0;z-index:2;}
+.scan-title{font-family:var(--disp);font-size:16px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.scan-close{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:18px;cursor:pointer;padding:7px 12px;line-height:1;font-family:var(--sans);}
+#scanVideo{width:100%;height:100%;object-fit:cover;display:block;}
+.scan-frame{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;}
+.scan-box{width:260px;height:160px;position:relative;}
+.scan-box::before,.scan-box::after{content:'';position:absolute;width:36px;height:36px;border-color:var(--accent);border-style:solid;}
+.scan-box::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+.scan-box::after{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+.scan-box-bl,.scan-box-br{position:absolute;width:36px;height:36px;border-color:var(--accent);border-style:solid;}
+.scan-box-bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+.scan-box-br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+.scan-laser{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);border-radius:2px;box-shadow:0 0 8px var(--accent);animation:laser 2s ease-in-out infinite;}
+@keyframes laser{0%,100%{top:8px;opacity:.8}50%{top:calc(100% - 10px);opacity:1}}
+.scan-hint{position:absolute;bottom:90px;left:0;right:0;text-align:center;color:rgba(255,255,255,.7);font-size:13px;font-weight:600;font-family:var(--sans);z-index:2;padding:0 20px;}
+.scan-result-flash{position:absolute;inset:0;background:rgba(77,158,255,.25);opacity:0;pointer-events:none;z-index:3;transition:opacity .15s;}
+.scan-result-flash.flash{opacity:1;}
+.scan-bottom{position:absolute;bottom:0;left:0;right:0;padding:16px 20px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,rgba(0,0,0,.8),transparent);z-index:2;}
+.scan-cam-toggle{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:13px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:8px;}
+/* scan btn no campo EAN */
+.ean-wrap{position:relative;}
+.btn-scan-ean{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;width:36px;height:32px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;}
+/* Quagga video fill */
+#scanViewport video{position:absolute;top:0;left:0;width:100%!important;height:100%!important;object-fit:cover;}
+#scanViewport canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;display:none;}
+</style>
+</head>
+<body>
+
+<!-- TELA: LOGIN -->
+<div id="sc-login" class="screen active">
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="login-logo-box">
+        <img src="icon-512.png" alt="Vigil" style="width:64px;height:64px;border-radius:16px;object-fit:cover;">
+      </div>
+      <div class="login-app-name">Vigil</div>
+      <div class="login-tagline">Sistema de Auditoria e Triagem</div>
+    </div>
+    <div class="login-card">
+      <div class="login-field">
+        <label class="login-field-label">Usuário</label>
+        <select class="login-select" id="loginUser">
+          <option value="">— Selecione —</option>
+          <option value="DerlanG">DerlanG</option>
+          <option value="MarioD">MarioD</option>
+          <option value="MarcosR">MarcosR</option>
+          <option value="PedroL">PedroL</option>
+          <option value="Emanuel">Emanuel</option>
+          <option value="ADM01">ADM01</option>
+        </select>
+      </div>
+      <div class="login-field">
+        <label class="login-field-label">Senha</label>
+        <div class="login-pin-wrap">
+          <input class="login-pin" id="loginPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••• " autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'')">
+          <button class="login-eye" id="eyeBtn" onclick="toggleEye()" type="button">👁</button>
+        </div>
+      </div>
+      <button class="btn-login" onclick="fazerLogin()">Entrar →</button>
+      <div class="login-error" id="loginError">Usuário ou senha incorretos</div>
+    </div>
+    <div class="login-footer">VIGIL v2.0 · Acesso restrito</div>
+  </div>
+</div>
+
+<div id="sc-upload" class="screen">
+  <div class="topbar"><div class="topbar-logo">Vigil</div><span class="topbar-user" id="userBadge" onclick="logout()">— · sair</span></div>
+  <div class="scroll-body">
+    <div class="hero-card">
+      <div class="hero-icon">🗂️</div>
+      <h2>Auditoria WMS</h2>
+      <p>Selecione o PDF de <b style="color:var(--text)">Localização Física do Estoque</b>. O app detecta automaticamente todos os campos.</p>
+      <label class="btn-upload">📂 Selecionar PDF<input type="file" accept=".pdf" onchange="handleFile(this.files[0])"></label>
+    </div>
+    <div class="or-divider">ou</div>
+    <div class="tri-card">
+      <div class="tri-icon">🔍</div>
+      <h2>Triagem de Produtos</h2>
+      <p>Registre itens por <b style="color:var(--text)">EAN, Código interno</b>, quantidade mista (cx+un), validade e avaria com quantidade.</p>
+      <button class="btn-triagem" onclick="showScreen('sc-triagem')">📋 Iniciar Triagem</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- TELA: LOADING -->
+<div id="sc-loading" class="screen">
+  <div class="topbar"><div class="topbar-logo">Vigil</div></div>
+  <div class="scroll-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;">
+    <div class="loader"></div>
+    <div class="load-title" id="loadTitle">Lendo PDF...</div>
+    <div class="load-sub" id="loadSub">Extraindo páginas</div>
+    <div class="load-file" id="loadFile"></div>
+    <div class="load-bar-wrap"><div class="load-bar"></div></div>
+  </div>
+</div>
+
+<!-- TELA: ENDEREÇOS -->
+<div id="sc-enderecos" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">Vigil</div>
+    <div class="topbar-right" id="topProg">0/0</div>
+    <button class="topbar-back" onclick="resetApp()">✕</button>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-header"><span class="prog-label">Progresso</span><span class="prog-pct" id="progPct">0%</span></div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+  <div class="search-wrap">
+    <input class="search-inp" id="searchInp" type="search" placeholder="🔍  Buscar endereço, código ou produto..." oninput="filtrar()">
+  </div>
+  <div class="scroll-body" id="listaEnd"></div>
+</div>
+
+<!-- TELA: DETALHE -->
+<div id="sc-detalhe" class="screen">
+  <div class="topbar">
+    <button class="topbar-back" onclick="voltarLista()">←</button>
+    <div class="topbar-logo">Detalhes</div>
+    <div class="topbar-right" id="detPos"></div>
+  </div>
+  <div class="scroll-body" id="detConteudo"></div>
+</div>
+
+<div class="bottom-bar" id="bottomBar">
+  <button class="btn-pdf" onclick="gerarPDF()">📄 PDF</button>
+  <button class="btn-wa" id="btnWa" onclick="abrirWA()" disabled>💬 WhatsApp</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: TRIAGEM
+     ══════════════════════════════════════════ -->
+<div id="sc-triagem" class="screen">
+  <div class="topbar">
+    <button class="topbar-back" onclick="voltarHome()">←</button>
+    <div class="topbar-logo">Vigil · Triagem</div>
+    <div class="topbar-right" id="triCount">0 itens</div>
+  </div>
+  <div class="scroll-body">
+    <div style="padding:12px 14px 140px">
+
+      <!-- Stats -->
+      <div class="tri-stats">
+        <div class="tri-stat"><div class="tri-stat-val ok" id="statOk">0</div><div class="tri-stat-label">Conformes</div></div>
+        <div class="tri-stat"><div class="tri-stat-val avariado" id="statAva">0</div><div class="tri-stat-label">Avariados</div></div>
+        <div class="tri-stat"><div class="tri-stat-val" id="statTotal">0</div><div class="tri-stat-label">Total</div></div>
+      </div>
+
+      <!-- Formulário -->
+      <div class="tri-form">
+        <div class="tri-form-title">📦 Novo Item</div>
+
+        <!-- EAN -->
+        <div class="tri-field">
+          <label class="tri-field-label">EAN / PLU (Código de barras)</label>
+          <div class="ean-wrap">
+            <input class="tri-inp scan-inp" id="triEan" type="text" inputmode="numeric" placeholder="Ex: 7891000123456" oninput="triEanInput(this)" style="padding-right:52px">
+            <button class="btn-scan-ean" onclick="abrirScanner()" type="button">📷</button>
+          </div>
+        </div>
+
+        <!-- Código interno -->
+        <div class="tri-field">
+          <label class="tri-field-label">Código Interno / SKU</label>
+          <input class="tri-inp" id="triCodigo" type="text" placeholder="Ex: 1234 · opcional" style="caret-color:var(--purple);" onfocus="this.style.borderColor='var(--purple)';this.style.boxShadow='0 0 0 3px rgba(155,124,252,.1)'" onblur="this.style.borderColor='';this.style.boxShadow=''">
+        </div>
+
+        <!-- Quantidade (abas simples / mista) -->
+        <div class="tri-field">
+          <label class="tri-field-label">Quantidade</label>
+          <div class="qty-section">
+            <div class="qty-mode-tabs">
+              <button class="qty-mode-tab active" id="tabSimples" onclick="setQtyMode('simples')">Simples</button>
+              <button class="qty-mode-tab" id="tabMisto" onclick="setQtyMode('misto')">Misto  cx + un</button>
+            </div>
+            <div class="qty-panels">
+              <!-- Painel simples -->
+              <div id="panelSimples">
+                <div class="qty-simple">
+                  <input class="tri-inp" id="triQtd" type="number" inputmode="decimal" placeholder="0,00" step="0.001" min="0">
+                  <div class="tri-unit-group">
+                    <button class="tri-unit-btn active" id="uKg" onclick="setUnit('kg')">kg</button>
+                    <button class="tri-unit-btn" id="uCx" onclick="setUnit('cx')">cx</button>
+                    <button class="tri-unit-btn" id="uUn" onclick="setUnit('un')">un</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Painel misto -->
+              <div id="panelMisto" style="display:none">
+                <div class="qty-mixed">
+                  <div class="qty-mixed-row">
+                    <label>CX</label>
+                    <input class="tri-inp" id="triQtdCx" type="number" inputmode="decimal" placeholder="0" step="1" min="0" oninput="atualizarPreview()">
+                    <div class="unit-pill">caixa(s)</div>
+                  </div>
+                  <div class="qty-mixed-row">
+                    <label>UN</label>
+                    <input class="tri-inp" id="triQtdUn" type="number" inputmode="decimal" placeholder="0" step="1" min="0" oninput="atualizarPreview()">
+                    <div class="unit-pill">unidade(s)</div>
+                  </div>
+                  <div class="qty-result-preview" id="qtyPreview">
+                    <span class="qty-label">TOTAL</span>
+                    <span class="qty-val" id="qtyPreviewVal">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Validade -->
+        <div class="tri-field">
+          <label class="tri-field-label">Validade</label>
+          <input class="tri-inp" id="triValidade" type="text" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" oninput="this.value=maskDate(this.value)">
+        </div>
+
+        <!-- Avariado toggle + quantidade avariada -->
+        <div class="avariado-section">
+          <div class="avariado-toggle" id="avaToggle" onclick="toggleAvariado()">
+            <span class="ava-icon" id="avaIcon">⚠️</span>
+            <div class="ava-info">
+              <div class="ava-label" id="avaLabel">Produto Avariado</div>
+              <div class="ava-sub">Toque para marcar como danificado</div>
+            </div>
+            <div class="ava-check" id="avaCheck"></div>
+          </div>
+          <!-- Painel quantidade avariada -->
+          <div class="ava-qty-panel" id="avaQtyPanel">
+            <div class="ava-qty-header">⚠️ Quanto está avariado?</div>
+            <div class="ava-qty-row">
+              <input class="tri-inp" id="avaQtd" type="number" inputmode="decimal" placeholder="0,00" step="0.001" min="0">
+              <div class="ava-unit-group">
+                <button class="ava-unit-btn active" id="auKg" onclick="setAvaUnit('kg')">kg</button>
+                <button class="ava-unit-btn" id="auCx" onclick="setAvaUnit('cx')">cx</button>
+                <button class="ava-unit-btn" id="auUn" onclick="setAvaUnit('un')">un</button>
+              </div>
+            </div>
+            <div class="ava-qty-note">Informe apenas a parte danificada do total</div>
+          </div>
+        </div>
+
+        <!-- Estoque -->
+        <div class="tri-field">
+          <label class="tri-field-label">Estoque</label>
+          <div class="estoque-sn-group">
+            <button class="estoque-sn-btn nao active" id="estoqueNao" onclick="setEstoque(false)">
+              <span class="esn-icon">✕</span>
+              <span class="esn-label">Não</span>
+            </button>
+            <button class="estoque-sn-btn sim" id="estoqueSim" onclick="setEstoque(true)">
+              <span class="esn-icon">✓</span>
+              <span class="esn-label">Sim</span>
+            </button>
+          </div>
+          <!-- Painel quantidade estoque -->
+          <div class="estoque-qty-panel" id="estoqueQtyPanel">
+            <div class="estoque-qty-header">📦 Quantidade em estoque</div>
+            <div class="ava-qty-row">
+              <input class="tri-inp" id="estoqueQtd" type="number" inputmode="decimal" placeholder="0,00" step="0.001" min="0">
+              <div class="ava-unit-group">
+                <button class="ava-unit-btn active" id="ekKg" onclick="setEstoqueUnit('kg')">kg</button>
+                <button class="ava-unit-btn" id="ekCx" onclick="setEstoqueUnit('cx')">cx</button>
+                <button class="ava-unit-btn" id="ekUn" onclick="setEstoqueUnit('un')">un</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Armazenagem -->
+        <div class="tri-field">
+          <label class="tri-field-label">Armazenagem</label>
+          <div class="arm-group">
+            <button class="arm-btn" id="arm4" onclick="setArmazenagem(4)">4</button>
+            <button class="arm-btn" id="arm6" onclick="setArmazenagem(6)">6</button>
+            <button class="arm-btn" id="armN" onclick="setArmazenagem(null)">—</button>
+          </div>
+        </div>
+
+        <button class="btn-add-tri" onclick="adicionarItemTriagem()">
+          <span style="font-size:18px">+</span> Adicionar Item
+        </button>
+      </div>
+
+      <!-- Lista -->
+      <div class="tri-list-header">
+        <div class="tri-list-title">Itens registrados</div>
+        <button class="btn-clear-tri" onclick="limparTriagem()">🗑 Limpar tudo</button>
+      </div>
+      <div id="triLista"></div>
+    </div>
+  </div>
+
+  <div class="tri-bottom">
+    <button class="btn-tri-pdf" onclick="gerarPDFTriagem()">📄 PDF</button>
+    <button class="btn-tri-wa" id="btnTriWa" onclick="abrirWATriagem()">💬 WhatsApp</button>
+  </div>
+</div>
+
+<!-- MODAL: EDITAR VALIDADE -->
+<div class="overlay" id="modalEdit" onclick="bgClose('modalEdit')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Editar Validade</div>
+    <div class="sheet-sub" id="editSub"></div>
+    <input class="date-inp" id="dateInp" type="text" placeholder="DD/MM/AAAA" maxlength="10" oninput="this.value=maskDate(this.value)" inputmode="numeric">
+    <div class="date-hint">Formato: DD/MM/AAAA</div>
+    <div class="sheet-btns">
+      <button class="btn-cancel" onclick="bgClose('modalEdit')">Cancelar</button>
+      <button class="btn-ok" onclick="pedirConf()">Confirmar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAÇÃO -->
+<div class="conf-overlay" id="modalConf">
+  <div class="conf-box">
+    <div class="conf-icon">❓</div>
+    <div class="conf-title">Confirmar alteração?</div>
+    <div class="conf-msg" id="confMsg"></div>
+    <div class="conf-val" id="confVal"></div>
+    <div class="conf-btns">
+      <button class="btn-nao" onclick="bgClose('modalConf')">Não</button>
+      <button class="btn-sim" onclick="confirmarAlteracao()">✓ Sim, alterar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WHATSAPP (Auditoria) -->
+<div class="overlay" id="modalWA" onclick="bgClose('modalWA')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">💬 Enviar pelo WhatsApp</div>
+    <div class="sheet-sub">PDF auditado gerado. Escreva a mensagem e abra o WhatsApp.</div>
+    <div class="wa-note">📎 No celular: WhatsApp abre com a mensagem. Anexe o PDF pelo clipe 📎.</div>
+    <textarea class="wa-textarea" id="waTxt" placeholder="Ex: Auditoria WMS concluída, segue relatório 📦"></textarea>
+    <div class="sheet-btns">
+      <button class="btn-cancel" onclick="bgClose('modalWA')">Cancelar</button>
+      <button class="btn-wa-send" onclick="enviarWA()">Abrir WhatsApp →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WHATSAPP (Triagem) -->
+<div class="overlay" id="modalWATri" onclick="bgClose('modalWATri')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">💬 Enviar Triagem</div>
+    <div class="sheet-sub">Escreva uma mensagem para acompanhar o relatório.</div>
+    <div class="wa-note">📎 No celular: WhatsApp abre com a mensagem. Anexe o PDF pelo clipe 📎.</div>
+    <textarea class="wa-textarea" id="waTxtTri" placeholder="Ex: Triagem realizada hoje, segue relatório..."></textarea>
+    <div class="sheet-btns">
+      <button class="btn-cancel" onclick="bgClose('modalWATri')">Cancelar</button>
+      <button class="btn-wa-send" onclick="enviarWATriagem()">Abrir WhatsApp →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SCANNER DE EAN -->
+<div class="scan-overlay" id="scanOverlay">
+  <div id="scanViewport" style="width:100%;height:100%;position:relative;background:#000;"></div>
+  <div class="scan-topbar">
+    <div class="scan-title">🔍 Ler Código de Barras</div>
+    <button class="scan-close" onclick="fecharScanner()">✕ Fechar</button>
+  </div>
+  <div class="scan-frame">
+    <div class="scan-box">
+      <div class="scan-box-bl"></div>
+      <div class="scan-box-br"></div>
+      <div class="scan-laser"></div>
+    </div>
+  </div>
+  <div class="scan-hint">Aponte a câmera para o código de barras</div>
+  <div class="scan-result-flash" id="scanFlash"></div>
+  <div class="scan-bottom">
+    <button class="scan-cam-toggle" onclick="trocarCamera()">🔄 Alternar câmera</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ── USUÁRIOS ── */
+const USERS={
+  'DerlanG':'47291',
+  'MarioD':'83056',
+  'MarcosR':'61748',
+  'PedroL':'29403',
+  'Emanuel':'75812',
+  'ADM01':'33415447'
+};
+let currentUser=null;
+
+/* ── LOGIN ── */
+function fazerLogin(){
+  const user=document.getElementById('loginUser').value;
+  const pin=document.getElementById('loginPin').value;
+  const err=document.getElementById('loginError');
+  if(!user){err.textContent='Selecione um usuário';err.classList.add('show');shake();return;}
+  if(!pin){err.textContent='Digite sua senha';err.classList.add('show');shake();return;}
+  if(USERS[user]!==pin){
+    err.textContent='Senha incorreta. Tente novamente.';err.classList.add('show');
+    document.getElementById('loginPin').value='';
+    shake();return;
+  }
+  err.classList.remove('show');
+  currentUser=user;
+  document.getElementById('userBadge').textContent=user+' · sair';
+  document.getElementById('loginPin').value='';
+  showScreen('sc-upload');
+}
+function shake(){
+  const card=document.querySelector('.login-card');
+  card.style.animation='shake .4s ease';
+  setTimeout(()=>card.style.animation='',450);
+}
+function toggleEye(){
+  const inp=document.getElementById('loginPin');
+  const btn=document.getElementById('eyeBtn');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
+function logout(){
+  if(!confirm('Sair do Vigil?'))return;
+  currentUser=null;enderecos=[];filtrados=[];triagemItens=[];lastPdfBlob=null;lastTriPdfBlob=null;
+  document.getElementById('bottomBar').classList.remove('show');
+  document.getElementById('searchInp').value='';
+  showScreen('sc-login');
+}
+// Enter key on pin
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('loginPin').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+});
+
+/* ── ESTADO GLOBAL ── */
+let enderecos=[], filtrados=[], currentIdx=null, pendingVal='', pdfFileName='', lastPdfBlob=null;
+let triagemItens=[], triagemUnit='kg', triagemAvariado=false, triagemAvaUnit='kg', triagemQtyMode='simples', lastTriPdfBlob=null;
+let triagemEstoque=false, triagemEstoqueUnit='kg', triagemArmazenagem=null;
+
+/* ── NAVEGAÇÃO ── */
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function voltarHome(){if(triagemItens.length>0){if(!confirm('Voltar ao início? Os itens de triagem serão perdidos.'))return;triagemItens=[];}showScreen('sc-upload');}
+
+/* ── QUANTIDADE ── */
+function setQtyMode(mode){
+  triagemQtyMode=mode;
+  document.getElementById('panelSimples').style.display=mode==='simples'?'':'none';
+  document.getElementById('panelMisto').style.display=mode==='misto'?'':'none';
+  document.getElementById('tabSimples').classList.toggle('active',mode==='simples');
+  document.getElementById('tabMisto').classList.toggle('active',mode==='misto');
+  if(mode==='misto'){document.getElementById('triQtdCx').value='';document.getElementById('triQtdUn').value='';atualizarPreview();}
+}
+function atualizarPreview(){
+  const cx=parseFloat(document.getElementById('triQtdCx').value)||0;
+  const un=parseFloat(document.getElementById('triQtdUn').value)||0;
+  const parts=[];
+  if(cx>0)parts.push(cx+'cx');
+  if(un>0)parts.push(un+'un');
+  document.getElementById('qtyPreviewVal').textContent=parts.length?parts.join(' + '):'—';
+}
+function setUnit(u){
+  triagemUnit=u;
+  ['Kg','Cx','Un'].forEach(x=>{const btn=document.getElementById('u'+x);if(btn)btn.classList.toggle('active',x.toLowerCase()===u);});
+}
+function setAvaUnit(u){
+  triagemAvaUnit=u;
+  ['Kg','Cx','Un'].forEach(x=>{const btn=document.getElementById('au'+x);if(btn)btn.classList.toggle('active',x.toLowerCase()===u);});
+}
+
+/* ── ESTOQUE SIM / NÃO ── */
+function setEstoque(sim){
+  triagemEstoque=sim;
+  document.getElementById('estoqueSim').classList.toggle('active',sim===true);
+  document.getElementById('estoqueNao').classList.toggle('active',sim===false);
+  const panel=document.getElementById('estoqueQtyPanel');
+  panel.classList.toggle('show',sim===true);
+  if(sim===true) setTimeout(()=>document.getElementById('estoqueQtd').focus(),200);
+  else document.getElementById('estoqueQtd').value='';
+}
+function setEstoqueUnit(u){
+  triagemEstoqueUnit=u;
+  ['Kg','Cx','Un'].forEach(x=>{const btn=document.getElementById('ek'+x);if(btn)btn.classList.toggle('active',x.toLowerCase()===u);});
+}
+
+/* ── ARMAZENAGEM ── */
+function setArmazenagem(v){
+  triagemArmazenagem=v;
+  [4,6,null].forEach(x=>{
+    const id=x===null?'armN':'arm'+x;
+    const btn=document.getElementById(id);
+    if(btn)btn.classList.toggle('active',x===v);
+  });
+}
+
+
+function toggleAvariado(){
+  triagemAvariado=!triagemAvariado;
+  document.getElementById('avaToggle').classList.toggle('active',triagemAvariado);
+  document.getElementById('avaCheck').textContent=triagemAvariado?'✓':'';
+  document.getElementById('avaLabel').textContent=triagemAvariado?'⚠️ Marcado como Avariado':'Produto Avariado';
+  const panel=document.getElementById('avaQtyPanel');
+  panel.classList.toggle('show',triagemAvariado);
+  if(triagemAvariado)setTimeout(()=>document.getElementById('avaQtd').focus(),250);
+  else{document.getElementById('avaQtd').value='';}
+}
+
+/* ── EAN AUTO-AVANÇA ── */
+function triEanInput(inp){if(inp.value.replace(/\D/g,'').length>=13){inp.blur();document.getElementById('triCodigo').focus();}}
+
+/* ── MONTAR TEXTO DE QUANTIDADE ── */
+function getQtyText(item){
+  if(item.qtyMode==='misto'){
+    const parts=[];
+    if(item.qtdCx>0)parts.push(item.qtdCx+'cx');
+    if(item.qtdUn>0)parts.push(item.qtdUn+'un');
+    return parts.join(' + ')||'—';
+  }
+  return item.qtd.toLocaleString('pt-BR',{maximumFractionDigits:3})+' '+item.unit;
+}
+
+/* ── ADICIONAR ITEM ── */
+function adicionarItemTriagem(){
+  const ean=document.getElementById('triEan').value.trim();
+  const codigo=document.getElementById('triCodigo').value.trim();
+  const validade=document.getElementById('triValidade').value.trim();
+
+  if(!ean){showToast('❌ Informe o EAN ou PLU');document.getElementById('triEan').focus();return;}
+
+  let qtd=0,qtdCx=0,qtdUn=0;
+  if(triagemQtyMode==='simples'){
+    const raw=document.getElementById('triQtd').value.trim();
+    if(!raw||isNaN(parseFloat(raw.replace(',','.')))){showToast('❌ Informe a quantidade');document.getElementById('triQtd').focus();return;}
+    qtd=parseFloat(raw.replace(',','.'));
+  } else {
+    qtdCx=parseFloat(document.getElementById('triQtdCx').value)||0;
+    qtdUn=parseFloat(document.getElementById('triQtdUn').value)||0;
+    if(qtdCx===0&&qtdUn===0){showToast('❌ Informe ao menos uma quantidade');document.getElementById('triQtdCx').focus();return;}
+  }
+
+  if(validade&&!isValidDate(validade)){showToast('❌ Data inválida! Use DD/MM/AAAA');document.getElementById('triValidade').focus();return;}
+
+  let avaQtd=null,avaUnit=null;
+  if(triagemAvariado){
+    const avaRaw=document.getElementById('avaQtd').value.trim();
+    if(avaRaw&&!isNaN(parseFloat(avaRaw.replace(',','.')))){
+      avaQtd=parseFloat(avaRaw.replace(',','.'));
+      avaUnit=triagemAvaUnit;
+    }
+  }
+
+  let estoqueQtd=null,estoqueUnit=null;
+  if(triagemEstoque){
+    const ekRaw=document.getElementById('estoqueQtd').value.trim();
+    if(ekRaw&&!isNaN(parseFloat(ekRaw.replace(',','.')))){
+      estoqueQtd=parseFloat(ekRaw.replace(',','.'));
+      estoqueUnit=triagemEstoqueUnit;
+    }
+  }
+
+  const item={
+    id:Date.now(),ean,codigo,
+    qtyMode:triagemQtyMode,
+    qtd,unit:triagemUnit,
+    qtdCx,qtdUn,
+    validade:validade||null,
+    avariado:triagemAvariado,
+    avaQtd,avaUnit,
+    estoque:triagemEstoque,
+    estoqueQtd,estoqueUnit,
+    armazenagem:triagemArmazenagem,
+    hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+  };
+
+  triagemItens.unshift(item);
+  limparFormTriagem();
+  renderTriagem();
+  showToast(triagemAvariado?'⚠️ Item avariado registrado!':'✅ Item adicionado!');
+  document.getElementById('triEan').focus();
+}
+
+function limparFormTriagem(){
+  ['triEan','triCodigo','triQtd','triValidade','triQtdCx','triQtdUn','avaQtd','estoqueQtd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  atualizarPreview();
+  if(triagemAvariado){
+    triagemAvariado=false;
+    document.getElementById('avaToggle').classList.remove('active');
+    document.getElementById('avaCheck').textContent='';
+    document.getElementById('avaLabel').textContent='Produto Avariado';
+    document.getElementById('avaQtyPanel').classList.remove('show');
+  }
+  if(triagemEstoque!==false){
+    triagemEstoque=false;
+    document.getElementById('estoqueNao').classList.add('active');
+    document.getElementById('estoqueSim').classList.remove('active');
+    document.getElementById('estoqueQtyPanel').classList.remove('show');
+    document.getElementById('estoqueQtd').value='';
+  }
+  if(triagemArmazenagem!==null){
+    triagemArmazenagem=null;
+    [4,6].forEach(x=>{const btn=document.getElementById('arm'+x);if(btn)btn.classList.remove('active');});
+    const btnN=document.getElementById('armN');if(btnN)btnN.classList.remove('active');
+  }
+}
+
+function removerItemTriagem(id){triagemItens=triagemItens.filter(i=>i.id!==id);renderTriagem();showToast('🗑 Item removido');}
+function limparTriagem(){if(triagemItens.length===0)return;if(!confirm('Limpar todos os '+triagemItens.length+' itens?'))return;triagemItens=[];renderTriagem();showToast('🗑 Lista limpa');}
+
+/* ── RENDER TRIAGEM ── */
+function renderTriagem(){
+  const total=triagemItens.length,avariados=triagemItens.filter(i=>i.avariado).length,conformes=total-avariados;
+  document.getElementById('triCount').textContent=total+' item'+(total!==1?'s':'');
+  document.getElementById('statOk').textContent=conformes;
+  document.getElementById('statAva').textContent=avariados;
+  document.getElementById('statTotal').textContent=total;
+  const lista=document.getElementById('triLista');lista.innerHTML='';
+  if(total===0){lista.innerHTML=`<div class="tri-empty"><div class="tri-empty-icon">📦</div><div class="tri-empty-text">Nenhum item registrado ainda.<br>Preencha o formulário acima.</div></div>`;return;}
+  triagemItens.forEach(item=>{
+    const stVal=item.validade?getStatus(item.validade):null;
+    const valCls=!stVal?'':(stVal.cls==='ok'?'val-ok':stVal.cls==='warn'?'val-warn':'val-danger');
+    const qtyText=getQtyText(item);
+    const isMixed=item.qtyMode==='misto';
+    const el=document.createElement('div');
+    el.className='tri-item'+(item.avariado?' avariado':'');
+    el.innerHTML=`
+      <div class="tri-item-row">
+        <div class="tri-item-icon">${item.avariado?'⚠️':'📦'}</div>
+        <div class="tri-item-info">
+          <div class="tri-item-code">EAN: ${item.ean}</div>
+          ${item.codigo?`<div class="tri-item-cod">Cód: ${item.codigo}</div>`:''}
+          <div class="tri-item-details">${item.hora} · ${item.avariado?'<span style="color:var(--red);font-weight:700">AVARIADO</span>':'Conforme'}</div>
+          <div class="tri-item-badges">
+            <span class="tri-badge ${isMixed?'qty-mixed':'qty'}">${qtyText}</span>
+            ${item.validade?`<span class="tri-badge ${valCls}">Val: ${item.validade}</span>`:'<span class="tri-badge" style="background:var(--surf2);color:var(--muted);border-color:var(--border)">Sem val.</span>'}
+            ${item.avariado&&item.avaQtd?`<span class="tri-badge ava-qty">Avaria: ${item.avaQtd.toLocaleString('pt-BR',{maximumFractionDigits:3})} ${item.avaUnit}</span>`:''}
+            ${item.estoque?`<span class="tri-badge stk">Estoque: ${item.estoqueQtd?item.estoqueQtd.toLocaleString('pt-BR',{maximumFractionDigits:3})+' '+item.estoqueUnit:'Sim'}</span>`:`<span class="tri-badge stk-no">Sem estoque</span>`}
+            ${item.armazenagem?`<span class="tri-badge arm">Arm. ${item.armazenagem}</span>`:''}
+            ${item.codigo?`<span class="tri-badge cod">${item.codigo}</span>`:''}
+          </div>
+        </div>
+        <button class="btn-del-item" onclick="removerItemTriagem(${item.id})">✕</button>
+      </div>`;
+    lista.appendChild(el);
+  });
+}
+
+/* ── STATUS VALIDADE ── */
+function getStatus(val){
+  if(!val)return{cls:'none',label:'Sem data'};
+  const p=val.split('/');if(p.length!==3)return{cls:'none',label:'Inválida'};
+  const d=new Date(+p[2],+p[1]-1,+p[0]);if(isNaN(d))return{cls:'none',label:'Inválida'};
+  const today=new Date();today.setHours(0,0,0,0);
+  const diff=Math.floor((d-today)/86400000);
+  if(diff<0)return{cls:'danger',label:`Venc. há ${-diff}d`};
+  if(diff<=30)return{cls:'warn',label:`Vence em ${diff}d`};
+  return{cls:'ok',label:`OK · ${diff}d`};
+}
+
+/* ── GERAR PDF TRIAGEM ── */
+async function gerarPDFTriagem(){
+  if(triagemItens.length===0){showToast('❌ Nenhum item para exportar');return;}
+  showToast('⏳ Gerando PDF...');
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const now=new Date();
+    const ds=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    doc.setFillColor(77,158,255);doc.rect(0,0,210,22,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont(undefined,'bold');
+    doc.text('VIGIL · TRIAGEM DE PRODUTOS',14,10);
+    doc.setFontSize(7);doc.setFont(undefined,'normal');
+    doc.text('Gerado: '+ds+'  |  Operador: '+(currentUser||'—'),14,16);
+    const ava=triagemItens.filter(i=>i.avariado).length;
+    doc.setFillColor(240,245,255);doc.rect(0,22,210,9,'F');
+    doc.setTextColor(30,58,138);doc.setFontSize(7);doc.setFont(undefined,'bold');
+    doc.text(`Total itens: ${triagemItens.length}   Conformes: ${triagemItens.length-ava}   Avariados: ${ava}`,14,28);
+    doc.autoTable({
+      startY:33,
+      head:[['#','EAN / PLU','Código','Quantidade','Validade','Status Val.','Estoque','Arm.','Qtd Avaria']],
+      body:triagemItens.map((item,i)=>{
+        const stVal=item.validade?getStatus(item.validade):null;
+        const estoqueText=item.estoque?(item.estoqueQtd?item.estoqueQtd.toLocaleString('pt-BR',{maximumFractionDigits:3})+' '+item.estoqueUnit:'Sim'):'Não';
+        return[
+          i+1,item.ean,item.codigo||'—',
+          getQtyText(item),
+          item.validade||'—',
+          stVal?stVal.label:'—',
+          estoqueText,
+          item.armazenagem||'—',
+          item.avariado&&item.avaQtd?`${item.avaQtd} ${item.avaUnit}`:item.avariado?'⚠ AVARIADO':'—'
+        ];
+      }),
+      headStyles:{fillColor:[77,158,255],textColor:255,fontStyle:'bold',fontSize:7},
+      bodyStyles:{fontSize:7},alternateRowStyles:{fillColor:[248,250,252]},
+      columnStyles:{
+        0:{cellWidth:9,halign:'center'},
+        1:{cellWidth:34},2:{cellWidth:22},3:{cellWidth:26},
+        4:{cellWidth:20,halign:'center'},5:{cellWidth:22,halign:'center'},
+        6:{cellWidth:22,halign:'center'},7:{cellWidth:12,halign:'center'},
+        8:{cellWidth:20,halign:'center'}
+      },
+      didDrawCell:(d)=>{
+        if(d.section==='body'){
+          if(d.column.index===5){const v=d.cell.raw;if(v.includes('OK'))d.cell.styles.textColor=[22,163,74];else if(v.includes('Vence'))d.cell.styles.textColor=[180,83,9];else if(v.includes('Venc.'))d.cell.styles.textColor=[220,38,38];}
+          if(d.column.index===2&&d.cell.raw!=='—')d.cell.styles.textColor=[139,99,247];
+          if(d.column.index===6){const v=d.cell.raw;if(v==='Não')d.cell.styles.textColor=[107,126,159];else d.cell.styles.textColor=[22,163,74];}
+          if(d.column.index===7&&d.cell.raw!=='—')d.cell.styles.textColor=[139,99,247];
+          if(d.column.index===8&&d.cell.raw!=='—')d.cell.styles.textColor=[220,38,38];
+        }
+      },
+      margin:{left:14,right:14},theme:'grid'
+    });
+    const pages=doc.internal.getNumberOfPages();
+    for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6);doc.setTextColor(160);doc.text(`Pág ${i}/${pages}`,196,290,{align:'right'});}
+    lastTriPdfBlob=doc.output('blob');
+    const a=document.createElement('a');a.href=URL.createObjectURL(lastTriPdfBlob);
+    a.download='triagem-'+now.toLocaleDateString('pt-BR').replace(/\//g,'-')+'.pdf';a.click();
+    showToast('✅ PDF de triagem gerado!');
+  }catch(e){showToast('❌ Erro: '+e.message);console.error(e);}
+}
+
+/* ── LEITURA PDF ── */
+async function handleFile(file){
+  if(!file)return;pdfFileName=file.name;document.getElementById('loadFile').textContent=file.name;showScreen('sc-loading');
+  try{
+    setLoad('Lendo PDF...','Extraindo colunas de cada página');
+    const itens=await extrairItensPDF(file);
+    if(itens.length===0){alert('Nenhum item encontrado.');showScreen('sc-upload');return;}
+    enderecos=itens;filtrados=[...enderecos];renderLista();showScreen('sc-enderecos');checkAllDone();
+  }catch(e){alert('Erro: '+e.message);showScreen('sc-upload');}
+}
+function setLoad(t,s){document.getElementById('loadTitle').textContent=t;document.getElementById('loadSub').textContent=s;}
+async function extrairItensPDF(file){
+  const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;const todoItens=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    setLoad('Lendo PDF...','Página '+p+' de '+pdf.numPages);
+    const page=await pdf.getPage(p);const ct=await page.getTextContent();const porLinha={};
+    ct.items.forEach(item=>{const y=Math.round(item.transform[5]);if(!porLinha[y])porLinha[y]=[];porLinha[y].push({texto:item.str.trim(),x:item.transform[4]});});
+    const ysOrdenados=Object.keys(porLinha).map(Number).sort((a,b)=>b-a);
+    ysOrdenados.forEach(y=>{
+      const celulas=porLinha[y].sort((a,b)=>a.x-b.x);const linha=celulas.map(c=>c.texto).join(' ').trim();
+      const mDep=linha.match(/^(\d{4})\s+(\d+\.\d+\.\d+\.\d+\.\d+)\s+(\S+)\s+(.+?)\s+(\d+x\d+)\s+(\d{2}\/\d{2}\/\d{2,4})\s+(\S+)\s+(?:(\d{2}\/\d{2}\/\d{2,4})\s+)?([0-9.,]+)\s+([0-9.,]+)\s+(\w+)$/);
+      if(mDep){const vp=mDep[6].split('/');if(vp[2].length===2)vp[2]='20'+vp[2];todoItens.push({id:todoItens.length,deposito:mDep[1],endereco:mDep[2],codigo:mDep[3],descricao:mDep[4].trim(),norma:mDep[5],validade:vp.join('/'),nrPalete:mDep[7],dtaEntr:mDep[8]||'',embalagem:mDep[9],unidade:mDep[10],status:mDep[11],confirmado:false});return;}
+      const mFallback=linha.match(/(\d{4})\s+(\d+\.\d+\.\d+\.\d+\.\d+)\s+(\S+)\s+(.+?)\s+(\d+x\d+)\s+(\d{2}\/\d{2}\/\d{2,4})/);
+      if(mFallback){const vp=mFallback[6].split('/');if(vp[2].length===2)vp[2]='20'+vp[2];const resto=linha.slice(mFallback[0].length).trim();const mResto=resto.match(/(\S+)\s+(?:(\d{2}\/\d{2}\/\d{2,4})\s+)?([0-9.,]+)\s+([0-9.,]+)/);todoItens.push({id:todoItens.length,deposito:mFallback[1],endereco:mFallback[2],codigo:mFallback[3],descricao:mFallback[4].trim(),norma:mFallback[5],validade:vp.join('/'),nrPalete:mResto?mResto[1]:'',dtaEntr:mResto&&mResto[2]?mResto[2]:'',embalagem:mResto?mResto[3]:'',unidade:mResto?mResto[4]:'',status:'Alocado',confirmado:false});}
+    });
+  }
+  const vistos=new Set();return todoItens.filter(it=>{const key=it.endereco+'|'+it.codigo;if(vistos.has(key))return false;vistos.add(key);return true;});
+}
+
+/* ── AUDITORIA ── */
+function filtrar(){const q=(document.getElementById('searchInp').value||'').toLowerCase();filtrados=q?enderecos.filter(e=>e.endereco.toLowerCase().includes(q)||e.codigo.toLowerCase().includes(q)||e.descricao.toLowerCase().includes(q)):[...enderecos];renderCards();}
+function renderLista(){atualizarProgresso();filtrados=[...enderecos];renderCards();}
+function atualizarProgresso(){const done=enderecos.filter(e=>e.confirmado).length,total=enderecos.length,pct=total?Math.round(done/total*100):0;document.getElementById('topProg').textContent=`${done}/${total}`;document.getElementById('progPct').textContent=pct+'%';document.getElementById('progFill').style.width=pct+'%';}
+function renderCards(){
+  const lista=document.getElementById('listaEnd');lista.innerHTML='';
+  const done=enderecos.filter(e=>e.confirmado).length;
+  const banner=document.createElement('div');banner.className='all-done-banner'+(done===enderecos.length&&enderecos.length>0?' show':'');
+  banner.innerHTML=`<span style="font-size:24px">🎉</span><p><b>Auditoria concluída!</b><br>Todos os endereços conferidos. Gere o PDF.</p>`;lista.appendChild(banner);
+  filtrados.forEach(en=>{
+    const st=en.confirmado?{cls:'done',label:'✓ Conferido'}:getStatus(en.validade);
+    const card=document.createElement('div');card.className='end-card'+(en.confirmado?' done':'');
+    card.innerHTML=`<div class="end-row"><div class="end-icon">${en.confirmado?'✅':'📍'}</div><div class="end-info"><div class="end-addr">${en.endereco}</div><div class="end-prod">${en.descricao}</div><div class="end-meta">${en.codigo} · ${en.norma} · ${en.validade||'—'}</div></div><span class="end-badge ${st.cls}">${st.label}</span><span class="end-arrow">›</span></div>`;
+    card.onclick=()=>abrirDetalhe(en.id);lista.appendChild(card);
+  });
+}
+function checkAllDone(){const done=enderecos.filter(e=>e.confirmado).length;if(done===enderecos.length&&enderecos.length>0){document.getElementById('bottomBar').classList.add('show');document.getElementById('btnWa').disabled=false;}}
+function abrirDetalhe(id){currentIdx=enderecos.findIndex(e=>e.id===id);renderDetalhe();showScreen('sc-detalhe');}
+function voltarLista(){atualizarProgresso();filtrar();checkAllDone();showScreen('sc-enderecos');}
+function renderDetalhe(){
+  const en=enderecos[currentIdx];const st=getStatus(en.validade);const pos=`${currentIdx+1}/${enderecos.length}`;
+  document.getElementById('detPos').textContent=pos;
+  const temAnt=currentIdx>0,temProx=currentIdx<enderecos.length-1;
+  document.getElementById('detConteudo').innerHTML=`
+  <div style="padding:14px 14px 120px">
+    <div class="det-addr-tag"><span style="font-size:22px">📍</span><div><div class="addr-text">${en.endereco}</div><div class="addr-sub">Depósito ${en.deposito} · ${pos}</div></div></div>
+    <div class="info-block ${en.confirmado?'done':''}">
+      <div class="info-row"><span class="info-label">Código</span><span class="info-val mono">${en.codigo}</span></div>
+      <div class="info-row"><span class="info-label">Descrição</span><span class="info-val" style="font-size:12px;line-height:1.5">${en.descricao}</span></div>
+      <div class="info-row"><span class="info-label">Norma</span><span class="info-val mono">${en.norma||'—'}</span></div>
+      <div class="info-row"><span class="info-label">Embalagem</span><span class="info-val mono">${en.embalagem||'—'}</span></div>
+      <div class="info-row"><span class="info-label">Unidade</span><span class="info-val mono">${en.unidade||'—'}</span></div>
+      ${en.dtaEntr?`<div class="info-row"><span class="info-label">Dt. Entrada</span><span class="info-val mono">${en.dtaEntr}</span></div>`:''}
+      ${en.nrPalete?`<div class="info-row"><span class="info-label">Nr. Palete</span><span class="info-val mono">${en.nrPalete}</span></div>`:''}
+    </div>
+    <div class="info-block ${en.confirmado?'done':''}">
+      <div class="val-row">
+        <div class="val-dot ${en.confirmado?'ok':st.cls}"></div>
+        <span class="val-label">Validade</span>
+        <div style="flex:1"><div class="val-data-big">${en.validade||'—'}</div><div class="val-status-txt">${en.confirmado?'✓ Confirmada':st.label}</div></div>
+        <button class="btn-edit" onclick="abrirEditar()">${en.confirmado?'✏ Corrigir':'✏ Editar'}</button>
+      </div>
+    </div>
+    ${en.confirmado?`<div class="done-check"><span style="font-size:20px">✅</span> Validade confirmada e registrada</div>`:''}
+    <div class="nav-btns">
+      <button class="btn-nav" onclick="navegar(-1)" ${!temAnt?'disabled':''}>← Anterior</button>
+      ${temProx?`<button class="btn-nav primary" onclick="navegar(1)">Próximo →</button>`:`<button class="btn-nav primary" onclick="voltarLista()">Ver lista ✓</button>`}
+    </div>
+  </div>`;
+}
+function navegar(dir){currentIdx=Math.max(0,Math.min(enderecos.length-1,currentIdx+dir));renderDetalhe();}
+function abrirEditar(){
+  const en=enderecos[currentIdx];document.getElementById('editSub').textContent=en.endereco+' · '+en.descricao;
+  document.getElementById('dateInp').value=en.validade||'';document.getElementById('modalEdit').classList.add('open');
+  setTimeout(()=>document.getElementById('dateInp').focus(),250);
+}
+function pedirConf(){
+  const val=document.getElementById('dateInp').value.trim();
+  if(val&&!isValidDate(val)){showToast('❌ Data inválida! Use DD/MM/AAAA');return;}
+  pendingVal=val;bgClose('modalEdit');
+  const en=enderecos[currentIdx];
+  document.getElementById('confMsg').textContent=`Alterar validade de "${en.descricao.slice(0,40)}" para:`;
+  document.getElementById('confVal').textContent=val||'(sem data)';document.getElementById('modalConf').classList.add('open');
+}
+function confirmarAlteracao(){
+  enderecos[currentIdx].validade=pendingVal||null;enderecos[currentIdx].confirmado=true;
+  bgClose('modalConf');showToast('✅ Validade confirmada!');renderDetalhe();atualizarProgresso();filtrar();checkAllDone();
+}
+
+/* ── GERAR PDF AUDITORIA ── */
+async function gerarPDF(){
+  showToast('⏳ Gerando PDF...');
+  try{
+    const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});const now=new Date();
+    const ds=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    doc.setFillColor(77,158,255);doc.rect(0,0,297,22,'F');doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont(undefined,'bold');
+    doc.text('VIGIL · AUDITORIA WMS · RELATÓRIO DE VALIDADES',14,10);doc.setFontSize(7);doc.setFont(undefined,'normal');
+    doc.text('Arquivo: '+pdfFileName+'  |  Operador: '+(currentUser||'—'),14,16);doc.text('Gerado: '+ds,200,16);
+    const conf=enderecos.filter(e=>e.confirmado).length;
+    doc.setFillColor(245,248,255);doc.rect(0,22,297,9,'F');doc.setTextColor(30,58,138);doc.setFontSize(7);doc.setFont(undefined,'bold');
+    doc.text(`Total: ${enderecos.length}   Conferidos: ${conf}   Pendentes: ${enderecos.length-conf}`,14,28);
+    doc.autoTable({
+      startY:33,head:[['Endereço','Código','Descrição','Norma','Validade','Embalagem','Unidade','Dt.Entrada','Status']],
+      body:enderecos.map(en=>{const st=en.confirmado?{label:'✓ Conferido'}:getStatus(en.validade);return[en.endereco,en.codigo,en.descricao,en.norma||'—',en.validade||'—',en.embalagem||'—',en.unidade||'—',en.dtaEntr||'—',st.label];}),
+      headStyles:{fillColor:[77,158,255],textColor:255,fontStyle:'bold',fontSize:6},bodyStyles:{fontSize:6},alternateRowStyles:{fillColor:[248,250,252]},
+      columnStyles:{0:{cellWidth:28},1:{cellWidth:18},2:{cellWidth:70},3:{cellWidth:14,halign:'center'},4:{cellWidth:20,halign:'center'},5:{cellWidth:16,halign:'center'},6:{cellWidth:16,halign:'center'},7:{cellWidth:20,halign:'center'},8:{cellWidth:26,halign:'center'}},
+      margin:{left:14,right:14},theme:'grid'
+    });
+    const pages=doc.internal.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6);doc.setTextColor(160);doc.text(`Pág ${i}/${pages}`,283,205,{align:'right'});}
+    lastPdfBlob=doc.output('blob');const a=document.createElement('a');a.href=URL.createObjectURL(lastPdfBlob);
+    a.download='auditoria-wms-'+now.toLocaleDateString('pt-BR').replace(/\//g,'-')+'.pdf';a.click();showToast('✅ PDF gerado!');
+  }catch(e){showToast('❌ Erro: '+e.message);console.error(e);}
+}
+
+/* ── WHATSAPP ── */
+function abrirWA(){if(!lastPdfBlob){gerarPDF().then(()=>setTimeout(()=>document.getElementById('modalWA').classList.add('open'),1000));return;}document.getElementById('waTxt').value='';document.getElementById('modalWA').classList.add('open');}
+async function enviarWA(){
+  const msg=document.getElementById('waTxt').value.trim()||'Auditoria WMS concluída. Segue relatório 📦';bgClose('modalWA');
+  if(lastPdfBlob&&navigator.canShare){const file=new File([lastPdfBlob],'auditoria-wms.pdf',{type:'application/pdf'});if(navigator.canShare({files:[file]})){try{await navigator.share({files:[file],text:msg});showToast('✅ Compartilhado!');return;}catch(e){}}}
+  const conf=enderecos.filter(e=>e.confirmado).length;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg+'\n\n📊 Auditoria WMS\n✅ Conferidos: '+conf+'\n📦 Total: '+enderecos.length+'\n\n_PDF salvo — anexe pelo clipe 📎_'),'_blank');showToast('💬 WhatsApp aberto! Anexe o PDF 📎');
+}
+function abrirWATriagem(){if(triagemItens.length===0){showToast('❌ Nenhum item registrado');return;}document.getElementById('waTxtTri').value='';document.getElementById('modalWATri').classList.add('open');}
+async function enviarWATriagem(){
+  const msg=document.getElementById('waTxtTri').value.trim()||'Triagem de produtos realizada. Segue relatório 📦';bgClose('modalWATri');
+  if(!lastTriPdfBlob)await gerarPDFTriagem();
+  if(lastTriPdfBlob&&navigator.canShare){const file=new File([lastTriPdfBlob],'triagem.pdf',{type:'application/pdf'});if(navigator.canShare({files:[file]})){try{await navigator.share({files:[file],text:msg});showToast('✅ Compartilhado!');return;}catch(e){}}}
+  const ava=triagemItens.filter(i=>i.avariado).length;
+  const linhas=triagemItens.slice(0,15).map((it,i)=>`${i+1}. EAN:${it.ean}${it.codigo?' Cód:'+it.codigo:''} — ${getQtyText(it)}${it.validade?' Venc:'+it.validade:''}${it.avariado?' ⚠️AVARIADO'+(it.avaQtd?' ('+it.avaQtd+it.avaUnit+')':''):''}`).join('\n');
+  const extra=triagemItens.length>15?`\n...e mais ${triagemItens.length-15} itens`:'';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg+'\n\n🔍 TRIAGEM DE PRODUTOS\n📦 Total: '+triagemItens.length+'\n✅ Conformes: '+(triagemItens.length-ava)+'\n⚠️ Avariados: '+ava+'\n\n'+linhas+extra+'\n\n_PDF salvo — anexe pelo clipe 📎_'),'_blank');showToast('💬 WhatsApp aberto! Anexe o PDF 📎');
+}
+
+/* ── UTILS ── */
+function maskDate(v){let n=v.replace(/\D/g,'');if(n.length>=3)n=n.slice(0,2)+'/'+n.slice(2);if(n.length>=6)n=n.slice(0,5)+'/'+n.slice(5,9);return n;}
+function isValidDate(s){const p=s.split('/');if(p.length!==3||p[2].length!==4)return false;const d=new Date(+p[2],+p[1]-1,+p[0]);return!isNaN(d)&&d.getDate()===+p[0];}
+function bgClose(id){document.getElementById(id).classList.remove('open');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
+function resetApp(){if(!confirm('Voltar ao início?'))return;enderecos=[];filtrados=[];currentIdx=null;lastPdfBlob=null;pdfFileName='';document.getElementById('bottomBar').classList.remove('show');document.getElementById('searchInp').value='';showScreen('sc-upload');}
+
+/* ── SCANNER DE EAN — QuaggaJS ── */
+let scannerRodando=false, usarFrontal=false, ultimoCode='', ultimoTs=0;
+
+async function abrirScanner(){
+  // Primeiro pede permissão explicitamente
+  try{
+    const teste=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    teste.getTracks().forEach(t=>t.stop());
+  }catch(e){
+    showToast('❌ Permissão de câmera negada. Libere nas configurações do navegador.');
+    return;
+  }
+  document.getElementById('scanOverlay').classList.add('open');
+  iniciarQuagga();
+}
+
+function iniciarQuagga(){
+  if(scannerRodando){Quagga.stop();scannerRodando=false;}
+
+  const facing=usarFrontal?'user':'environment';
+
+  Quagga.init({
+    inputStream:{
+      type:'LiveStream',
+      target:document.getElementById('scanViewport'),
+      constraints:{
+        facingMode:facing,
+        width:{min:640,ideal:1280},
+        height:{min:480,ideal:720},
+      },
+    },
+    locator:{patchSize:'medium',halfSample:true},
+    numOfWorkers:0,
+    decoder:{
+      readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader'],
+    },
+    locate:true,
+  },function(err){
+    if(err){
+      showToast('❌ Erro ao iniciar câmera: '+err.message);
+      fecharScanner();
+      return;
+    }
+    Quagga.start();
+    scannerRodando=true;
+  });
+
+  Quagga.offDetected(); // remove listeners antigos
+  Quagga.onDetected(function(data){
+    const code=data.codeResult.code;
+    const agora=Date.now();
+    // Debounce: ignora leituras repetidas em menos de 1.5s
+    if(code===ultimoCode&&agora-ultimoTs<1500)return;
+    ultimoCode=code;ultimoTs=agora;
+
+    // Validação básica EAN (só números)
+    if(!/^\d+$/.test(code))return;
+
+    if(navigator.vibrate)navigator.vibrate([80,40,80]);
+    const flash=document.getElementById('scanFlash');
+    flash.classList.add('flash');
+    setTimeout(()=>flash.classList.remove('flash'),200);
+
+    document.getElementById('triEan').value=code;
+
+    setTimeout(()=>{
+      fecharScanner();
+      showToast('✅ EAN lido: '+code);
+      document.getElementById('triCodigo').focus();
+    },350);
+  });
+}
+
+function trocarCamera(){
+  usarFrontal=!usarFrontal;
+  if(scannerRodando){Quagga.stop();scannerRodando=false;}
+  iniciarQuagga();
+  showToast(usarFrontal?'📷 Câmera frontal':'📷 Câmera traseira');
+}
+
+function fecharScanner(){
+  if(scannerRodando){
+    try{Quagga.stop();}catch(e){}
+    scannerRodando=false;
+  }
+  document.getElementById('scanOverlay').classList.remove('open');
+  document.getElementById('scanViewport').innerHTML='';
+}
+
+/* ── SERVICE WORKER ── */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .catch(e=>console.log('SW:',e));
+  });
+}
+
+renderTriagem();
+</script>
+</body>
+</html>
